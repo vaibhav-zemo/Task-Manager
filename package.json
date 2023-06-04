@@ -11,6 +11,7 @@
   "author": "Vaibhav Pathak",
   "license": "ISC",
   "dependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
   }
 }
