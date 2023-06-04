@@ -11,10 +11,18 @@ import {
   Col,
 } from "bootstrap-4-react";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
+  const isTitle = () => toast("Fill the task title first");
+  const isDesc = () => toast("Fill the task description first");
+  const isDetail = () => toast("Fill the details first");
+  const isStatus = () => toast("Task is already completed");
 
   useEffect(() => {
     fetchTasks();
@@ -29,23 +37,36 @@ function App() {
     }
   };
 
-  const addTask = async () => {
+  const addTask = async (e) => {
+    e.preventDefault();
     try {
-      const response = await publicRequest.post("/api/tasks/", {
-        title,
-        description,
-        status: "pending",
-      });
-      setTasks([...tasks, response.data]);
-      setTitle("");
-      setDescription("");
+      if (!title && !description) {
+        isDetail();
+      } else if (!title) {
+        isTitle();
+      } else if (!description) {
+        isDesc();
+      } else {
+        const response = await publicRequest.post("/api/tasks/", {
+          title,
+          description,
+          status: "pending",
+        });
+        setTasks([...tasks, response.data]);
+        setTitle("");
+        setDescription("");
+      }
     } catch (error) {
       console.error(error);
     }
   };
 
-  const updateTaskStatus = async (taskId, status) => {
+  const updateTaskStatus = async (taskId, currStatus, status) => {
     try {
+      if (currStatus == "completed") {
+        isStatus();
+        return;
+      }
       const response = await publicRequest.put(`/api/tasks/${taskId}`, {
         status,
       });
@@ -105,6 +126,7 @@ function App() {
             <Button primary type="submit">
               Add Task
             </Button>
+            <ToastContainer />
           </Form.Group>
         </Form>
 
@@ -122,7 +144,9 @@ function App() {
                     mr="2"
                     // mb="2"
                     primary
-                    onClick={() => updateTaskStatus(task._id, "completed")}
+                    onClick={() =>
+                      updateTaskStatus(task._id, task.status, "completed")
+                    }
                   >
                     Mark as Completed
                   </Button>
